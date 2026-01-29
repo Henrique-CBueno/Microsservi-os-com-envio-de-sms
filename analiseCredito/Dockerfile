@@ -1,5 +1,14 @@
+FROM maven:3.8.7-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
 FROM eclipse-temurin:17-jdk
 
-COPY target/analiseCredito-0.0.1-SNAPSHOT.jar analise-credito.jar
+COPY --from=build /app/target/analiseCredito-0.0.1-SNAPSHOT.jar analise-credito.jar
 
 ENTRYPOINT ["java", "-jar", "/analise-credito.jar"]
