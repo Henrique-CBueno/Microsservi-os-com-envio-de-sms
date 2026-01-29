@@ -1,0 +1,54 @@
+services:
+  proposta-app:
+    build:
+      context: ./proposta-app
+    image: proposta-app
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+
+  analise-credito:
+    build:
+      context: ./analiseCredito
+    image: analise-credito
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+
+  notificacao:
+    build:
+      context: ./notificacao
+    image: notificacao
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      rabbit-mq:
+        condition: service_healthy
+
+  proposta-web-front:
+    image: matheuspieropan/proposta-web
+    ports:
+      - "80:80"
+
+  rabbit-mq:
+    image: rabbitmq:3-management
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres
+    container_name: postgres-docker-compose
+    environment:
+      POSTGRES_DB: docker
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
